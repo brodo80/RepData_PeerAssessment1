@@ -1,0 +1,95 @@
+---
+title: "Reproducable Research Project 1"
+author: "Sean Broderick"
+date: "September 26, 2016"
+output: html_document
+---
+
+Download the Data here
+
+```{r setup, include=TRUE, echo=TRUE}
+url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(url,"C:/Users/brodo/Documents/R/data.zip")
+unzip(zipfile="C:/Users/brodo/Documents/R/data.zip", exdir = "C:/Users/brodo/Documents/R")
+```
+
+
+Import the data set, update the date variable to date,plot steps by day, then get the mean and median steps per day
+
+```{r include=TRUE,echo=TRUE}
+setwd("C:/Users/brodo/Documents/R")
+activity <- read.csv("activity.csv")
+activity$date <- as.Date(activity$date)
+DailySteps <- aggregate(activity$steps,by=list(Year=activity$date),FUN=sum)
+
+
+plot1 <- function() {
+hist(DailySteps$x,, main="Daily Steps Taken", col="green", xlab="Daily Steps Taken")
+dev.copy(png, file="plot1.png", width=480, height=480)
+dev.off()
+}
+plot1()
+
+DailyClean <- DailySteps[!(is.na(DailySteps$x)),]
+mean(DailyClean$x)
+median(DailyClean$x)
+```
+
+
+some data cleaning is done here before the average step for each 5 minute interval 
+
+
+
+```{r include=TRUE, echo=TRUE}
+CleanActivity <- activity[!(is.na(activity$steps)),]
+AverageInterval <- aggregate(CleanActivity$steps,by=list(Interval=CleanActivity$interval),FUN=mean)
+
+plot2 <- function() {
+plot(AverageInterval$Interval, AverageInterval$x, xlab="5 Minute Intervals", ylab="Steps Taken", type="l", col="brown")
+dev.copy(png, file="plot2.png", width=480, height=480)
+dev.off()
+}
+plot2()
+```
+
+
+A simple average was used to impute the missing step records.The plot follows with all records populated.
+
+
+```{r, include=TRUE,echo=TRUE}
+AverageInterval[which.max(AverageInterval$x),]
+library(mice)
+md.pattern(activity)
+library(VIM)
+missing<- activity[(is.na(DailySteps$x)),]
+non <- na.omit(activity)
+missing[is.na(missing$steps), "steps"] <- mean(na.omit(activity$steps))
+ActivityNoMissing <- rbind(missing,non)
+DailyStepsNoMissing <- aggregate(ActivityNoMissing$steps,by=list(Date=ActivityNoMissing$date),FUN=sum)
+plot3 <- function() {
+hist(DailyStepsNoMissing$x, main="Daily Steps Taken", col="magenta", xlab="Daily Steps Taken")
+dev.copy(png, file="plot3.png", width=480, height=480)
+dev.off()
+}
+plot3()
+```
+
+
+Here you can find some data manipulation and the plot of the average 5 minute intervals weekday vs weekend
+```{r,include=TRUE, echo=TRUE}
+non$day <- weekdays(non$date)
+weekend <- non[non$day %in% c("Saturday","Sunday"),]
+weekday <- non[non$day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday"),]
+
+
+plot4 <- function() {
+par(mfrow = c(2,1))
+weekdayinterval <- aggregate(weekday$steps,by=list(Interval=weekday$interval),FUN=mean)
+weekendinterval <- aggregate(weekend$steps,by=list(Interval=weekend$interval),FUN=mean)
+plot(weekdayinterval$Interval, weekdayinterval$x,main="Average Weekday Steps", col="blue", xlab = '', ylab = '', type = "l")
+plot(weekendinterval$Interval, weekendinterval$x,main="Average Weekend Steps", col="green", xlab = '', ylab = '', type = "l")
+dev.copy(png, file="plot3.png", width=480, height=480) 
+dev.off()
+}
+plot4()
+```
