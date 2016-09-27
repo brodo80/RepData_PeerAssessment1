@@ -213,7 +213,7 @@ weekdayinterval &lt;- aggregate(weekday$steps,by=list(Interval=weekday$interval)
 weekendinterval &lt;- aggregate(weekend$steps,by=list(Interval=weekend$interval),FUN=mean)
 plot(weekdayinterval$Interval, weekdayinterval$x,main=&quot;Average Weekday Steps&quot;, col=&quot;blue&quot;, xlab = '', ylab = '', type = &quot;l&quot;)
 plot(weekendinterval$Interval, weekendinterval$x,main=&quot;Average Weekend Steps&quot;, col=&quot;green&quot;, xlab = '', ylab = '', type = &quot;l&quot;)
-dev.copy(png, file=&quot;plot3.png&quot;, width=480, height=480) 
+dev.copy(png, file=&quot;plot4.png&quot;, width=480, height=480) 
 dev.off()
 }
 plot4()</code></pre>
